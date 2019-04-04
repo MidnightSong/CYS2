@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http/cookiejar"
 	"os"
 	"regexp"
 	"strconv"
@@ -22,13 +23,16 @@ var ThreadSync sync.WaitGroup
 
 var client = resty.New()
 
-func openURL() (req *resty.Request, err error) {
-	req = resty.R()
-	req.SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36")
-	req.SetHeader("Connection", "keep-alive")
-	req.SetHeader("Accept", "*/*")
-	req.SetHeader("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,ja;q=0.5")
-	return
+func init() {
+	client.SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36")
+	client.SetHeader("Connection", "keep-alive")
+	client.SetHeader("Accept", "*/*")
+	client.SetHeader("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,ja;q=0.5")
+
+	jar, _ := cookiejar.New(nil)
+	client.SetCookieJar(jar)
+
+	client.SetRedirectPolicy(resty.DomainCheckRedirectPolicy("img.ciyo.cn"))
 }
 
 /***
@@ -39,8 +43,6 @@ func openURL() (req *resty.Request, err error) {
 */
 func GetMainPage(url string) (result, nextUrl string, err error) {
 	fmt.Printf("正在打开页面：%s\n", url)
-	client.R().SetHeader("Referer", "http://www.ciyo.cn/")
-	client.R().SetHeader("Host", "www.ciyo.cn")
 	resp, err := client.R().Get(url)
 	/*req, err :=openURL()
 	req.SetHeader("Referer", "http://www.ciyo.cn/")
