@@ -42,18 +42,15 @@ func init() {
 				err 	错误
 */
 func GetMainPage(url string) (result, nextUrl string, err error) {
+	client.SetRetryCount(2)
 	fmt.Printf("正在打开页面：%s\n", url)
 	resp, err := client.R().Get(url)
-	/*req, err :=openURL()
-	req.SetHeader("Referer", "http://www.ciyo.cn/")
-	req.SetHeader("Host", "www.ciyo.cn")
-	resp, err := req.Get(url)*/
 	if err != nil {
 		return
 	}
 	if resp.StatusCode() != 200 {
-		log.Fatal(string(resp.Body()))
-		fmt.Println("GetMainPage server error")
+		err = errors.New("GetMainPage server error:" + string(resp.StatusCode()))
+		log.Println("GetMainPage server error:\n", string(resp.Body()))
 		return
 	}
 
@@ -98,11 +95,6 @@ func GetJpgPage() (err error) { //多线程
 	client.R().SetHeader("Referer", "http://www.ciyo.cn/")
 	resp, err := client.R().Get(s)
 
-	/*req, _ := openURL()
-	req.SetHeader("Upgrade-Insecure-Requests", "1")
-	req.SetHeader("Referer", "http://www.ciyo.cn/")
-	req.SetHeader("Host", "www.ciyo.cn")
-	resp, err := req.Get(s)*/
 	fmt.Println("正在打开网页")
 	if err != nil {
 		fmt.Println(err.Error())
@@ -159,7 +151,6 @@ func GetJpgPage() (err error) { //多线程
 			return errors.New("未提取取到realJpg地址：\n" + res)
 		}
 		t++
-		log.Println("提取到realJpg地址" + mix)
 		RealJpgs.Push(mix)
 	}
 
@@ -181,17 +172,11 @@ func GetRealJpg(author string) { //多线程
 	client.R().SetHeader("Cache-Control", "max-age=0")
 	resp, err := client.R().Get(s)
 
-	/*req, _ := openURL()
-	req.SetHeader("Upgrade-Insecure-Requests", "1")
-	req.SetHeader("Cache-Control", "max-age=0")
-	req.SetHeader("Host", "qn.ciyocon.com")
-	resp, err := req.Get(s)*/
 	if err != nil {
 		log.Println("RealJpgs,len()=", strconv.Itoa(RealJpgs.Len()), "错误问题", err.Error())
 		return
 	}
 
-	//defer resp.Body.Close()
 	if resp.StatusCode() != 200 {
 		log.Println("GetRealJpg server error code:", resp.StatusCode(), s, string(resp.Body()))
 		return
