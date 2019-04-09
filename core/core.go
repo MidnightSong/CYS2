@@ -188,7 +188,7 @@ func WriteFile(author string, stream []byte) (err error) {
 	}
 
 	if _, ee := os.Stat("./Download/" + Group); ee != nil {
-		os.Mkdir("./Download/"+Group, os.ModePerm) //创建Download文件夹
+		os.Mkdir("./Download/"+Group, os.ModePerm) //创建分类文件夹
 	}
 	_, ee = os.Stat("./Download/" + author)
 	if ee != nil {
