@@ -8,11 +8,34 @@ import (
 )
 
 func main() {
+	var group string
 	var num int
+	fmt.Printf("将从次元社爬去照片\n从哪个分类下爬去图片：1.精选  2.萌妹  3.交友  4.日常  5.绘画  6.COS  7.兴趣  8.壁纸头像\n")
+	fmt.Scan(&num)
+	switch num {
+	case 1:
+		group = "精选"
+	case 2:
+		group = "萌妹"
+	case 3:
+		group = "交友"
+	case 4:
+		group = "日常"
+	case 5:
+		group = "绘画"
+	case 6:
+		group = "COS"
+	case 7:
+		group = "兴趣"
+	case 8:
+		group = "壁纸头像"
+	}
 	fmt.Printf("输入爬取多少页（>=1）:")
 	fmt.Scan(&num)
 
-	result, nextUrl, err := core.GetMainPage("http://www.ciyo.cn/home_posts?group=COS")
+	go spinner(100 * time.Millisecond)
+
+	result, nextUrl, err := core.GetMainPage("http://www.ciyo.cn/home_posts?group=" + group)
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -39,6 +62,15 @@ func main() {
 		go core.GetJpgPage()
 	}
 	core.ThreadSync.Wait()
-	time.Sleep(time.Second * 5)
 	fmt.Println("执行完毕")
+	time.Sleep(time.Second * 5)
+}
+
+func spinner(delay time.Duration) {
+	for {
+		for _, r := range `-\|/` {
+			fmt.Printf("\r%c", r)
+			time.Sleep(delay)
+		}
+	}
 }

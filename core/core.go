@@ -18,9 +18,8 @@ import (
 )
 
 var JpgUrls = stack.New() //用来保存获取到的作者套图页面的URL
-var RealJpgs = stack.New()
 var ThreadSync sync.WaitGroup
-
+var count int
 var client = resty.New()
 
 func init() {
@@ -95,7 +94,6 @@ func GetJpgPage() (err error) { //多线程
 	client.R().SetHeader("Referer", "http://www.ciyo.cn/")
 	resp, err := client.R().Get(s)
 
-	fmt.Println("正在打开网页")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -121,7 +119,7 @@ func GetJpgPage() (err error) { //多线程
 		author = data[1]
 		break
 	}
-	fmt.Println("作者名字提取到了：" + author)
+	fmt.Println("作者名称：" + author)
 
 	//提取图片地址
 	compile, e := regexp.Compile(`class="images"(?s:(.*?))</ul>`)
@@ -140,9 +138,9 @@ func GetJpgPage() (err error) { //多线程
 		e = errors.New("func GetJpgPage2 regexp compile error")
 		return
 	}
+	var realimg []string
 	jpgs2 := compile2.FindAllStringSubmatch(remix, -1)
 	var mix string
-	t := 0
 	for _, data := range jpgs2 {
 		mix = data[1]
 		if mix == "" {
@@ -150,35 +148,33 @@ func GetJpgPage() (err error) { //多线程
 			log.Println("未提取取到realJpg地址：\n" + res)
 			return errors.New("未提取取到realJpg地址：\n" + res)
 		}
-		t++
-		RealJpgs.Push(mix)
+		realimg = append(realimg, mix)
 	}
 
 	//调用获取真实的一张图片的接口
 
-	for i := 0; i < t; i++ {
+	for i := 0; i < len(realimg); i++ {
 		ThreadSync.Add(1)
-		go GetRealJpg(author)
+		go GetRealJpg(author, realimg[i])
 	}
 	return
 }
 
-func GetRealJpg(author string) { //多线程
+func GetRealJpg(author string, imgUrl string) { //多线程
 	time.Sleep(time.Second)
 	defer ThreadSync.Done()
-	s := RealJpgs.Pop()
 	client.R().SetHeader("Upgrade-Insecure-Requests", "1")
 	client.R().SetHeader("Host", "qn.ciyocon.com")
 	client.R().SetHeader("Cache-Control", "max-age=0")
-	resp, err := client.R().Get(s)
+	resp, err := client.R().Get(imgUrl)
 
 	if err != nil {
-		log.Println("RealJpgs,len()=", strconv.Itoa(RealJpgs.Len()), "错误问题", err.Error())
+		log.Println(imgUrl, "错误问题", err.Error())
 		return
 	}
 
 	if resp.StatusCode() != 200 {
-		log.Println("GetRealJpg server error code:", resp.StatusCode(), s, string(resp.Body()))
+		log.Println("GetRealJpg server error code:", resp.StatusCode(), imgUrl, string(resp.Body()))
 		return
 	}
 	WriteFile(author, resp.Body())

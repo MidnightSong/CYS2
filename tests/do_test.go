@@ -11,3 +11,7 @@ func TestDoOne(t *testing.T) {
 	core.GetJpgPage()
 
 }
+
+func TestDoTwo(t *testing.T) {
+	core.GetMainPage()
+}
