@@ -62,7 +62,7 @@ func main() {
 		go core.GetJpgPage()
 	}
 	core.ThreadSync.Wait()
-	fmt.Println("执行完毕")
+	fmt.Println("执行完毕，图片保存在当前文件夹下Download文件夹下")
 	time.Sleep(time.Second * 5)
 }
 
