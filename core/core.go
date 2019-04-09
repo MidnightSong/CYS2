@@ -21,6 +21,7 @@ var JpgUrls = stack.New() //用来保存获取到的作者套图页面的URL
 var ThreadSync sync.WaitGroup
 var count int
 var client = resty.New()
+var Group string
 
 func init() {
 	client.SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36")
@@ -185,13 +186,17 @@ func WriteFile(author string, stream []byte) (err error) {
 	if ee != nil {
 		os.Mkdir("./Download", os.ModePerm) //创建Download文件夹
 	}
+
+	if _, ee := os.Stat("./Download/" + Group); ee != nil {
+		os.Mkdir("./Download/"+Group, os.ModePerm) //创建Download文件夹
+	}
 	_, ee = os.Stat("./Download/" + author)
 	if ee != nil {
-		os.Mkdir("./Download/"+author, os.ModePerm) //以作者名字创建目录
+		os.Mkdir("./Download/"+Group+"/"+author, os.ModePerm) //以作者名字创建目录
 	}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	filename := strconv.Itoa(r.Intn(999999))
-	e := ioutil.WriteFile("./Download/"+author+"/"+filename+".jpg", stream, 0666)
+	e := ioutil.WriteFile("./Download/"+Group+"/"+author+"/"+filename+".jpg", stream, 0666)
 	if e != nil {
 		fmt.Println(e.Error())
 	}

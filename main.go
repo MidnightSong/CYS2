@@ -34,8 +34,8 @@ func main() {
 	fmt.Scan(&num)
 
 	go spinner(100 * time.Millisecond)
-
-	result, nextUrl, err := core.GetMainPage("http://www.ciyo.cn/home_posts?group=" + group)
+	core.Group = group
+	result, nextUrl, err := core.GetMainPage("http://www.ciyo.cn/home_posts?group=" + core.Group)
 	if err != nil {
 		log.Println(err.Error())
 		return
